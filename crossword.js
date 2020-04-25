@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 */
+/* Modified by Neetij Parekh, 2020 */
 
 function Crossw1rd(container_id) {
 
@@ -26,6 +27,9 @@ function Crossw1rd(container_id) {
   this.height = 0; // how many cells high
   this.clues; // data used to populate puzzle
   this.cells = []; // 2 dim array of cells in grid [y][x]
+  this.author;
+  this.title;
+  this.timestamp;
   this.grid;
   this.direction = 'A'; // A=across, D=down
   this.id; // puzzle identifier - gets set in init
@@ -41,6 +45,7 @@ function Crossw1rd(container_id) {
     this.container = $('<div class="crossw1rd"></div>').appendTo(c);
     this.populateClues(function() {
 			self.initDimensions();
+			self.drawTitles();
 			self.drawClues();
 			self.drawGrid();
 			self.drawControls();
@@ -67,6 +72,9 @@ function Crossw1rd(container_id) {
 		  success: function(data) {
 		  	self.puzzle = data;
 		  	self.clues = data.clues;
+        self.title = data.title;
+        self.author = data.author;
+        self.timestamp = data.timestamp;
 		  	continueInit();
 		  },
 		  error: function(jqXHR, textStatus, errorThrown) {
@@ -85,6 +93,11 @@ function Crossw1rd(container_id) {
     }
   }
 
+  // draw the titles
+  this.drawTitles = function() {
+    $('<div class="meta"><div class="title">'+self.title+'</div><div class="info">By: '+self.author+' | Updated: '+self.timestamp+'</div></div>').appendTo(this.container);
+  }
+  
   // draw the grid
   this.drawGrid = function() {
     // create grid container
@@ -133,20 +146,23 @@ function Crossw1rd(container_id) {
   this.drawClues = function() {
     var cluediv = $('<div class="clues"></div>').appendTo(this.container);
     cluediv.append('<h4 class="cluelabel">Across</h4>');
-    var aol = $('<div class="across scroll-pane"></div>').appendTo(cluediv);
+    var adiv = $('<div class="cluediv"></div>').appendTo(cluediv);
+    var aol = $('<ol class="across scroll-pane"></ol>').appendTo(adiv);
     cluediv.append('<h4 class="cluelabel">Down</h4>');
-    var dol = $('<div class="down scroll-pane"></div>').appendTo(cluediv);
+    var ddiv = $('<div class="cluediv"></div>').appendTo(cluediv);
+    var dol = $('<ol class="down scroll-pane"></ol>').appendTo(ddiv);
     for (var i=0; i<this.clues.length; i++) {
       var clue = this.clues[i];
       var li;
-      if (clue.d=='A') {
-        li = $('<p></p>').appendTo(aol);
-      }
-      else {
-        li = $('<p></p>').appendTo(dol);
+      li = $('<li value="'+clue.n+'"></li>');
+        if (clue.d=='A') {
+        li = li.appendTo(aol);
+      } else {
+        li = li.appendTo(dol);
       }
       li.addClass('c'+clue.d+clue.n);
-      li.text(clue.n + '. ' + clue.c);
+      // li.text(clue.n + '. ' + clue.c);
+      li.text(clue.c);
       li.data('clueix',i);
       li.click(this.clue_click);
     }
@@ -174,21 +190,27 @@ function Crossw1rd(container_id) {
   // draw controls
   this.drawControls = function() {
     var div = $('<div class="controls"></div>').appendTo(this.container);
-    var reset = $('<button>Reset</button>').appendTo(div);;
+    var reset = $('<button class="active">Reset</button>').appendTo(div);
     reset.click(this.reset);
+    var check3 = $('<button class="active">Check Puzzle</button>').appendTo(div);
+    check3.click(this.checkPuzzle);
+    var check2 = $('<button class="active">Check Word</button>').appendTo(div);
+    check2.click(this.checkWord);
+    var unlock = $('<button id="button-unlock" class="inactive">Unlock and Continue</button>').appendTo(div);
+    unlock.click(this.unlockPuzzle);
   }
 
   // set container dimensions based on grid size
   this.adjustDimensions = function() {
-    var clueW = 200;
-    var padding = 20;
+    var clueW = 300;
+    var padding = 10;
     var h = this.grid.height(); 
     var w = this.grid.width();
     var ctrlH = this.container.find('.controls').height();
-    this.container.width(h+padding+clueW);
-    this.container.height(h+6+ctrlH);
-    this.container.find('.clues').width(clueW);
-    this.container.find('.clues').height(h);
+    // this.container.width(h+padding+clueW);
+    // this.container.height(h+6+ctrlH);
+    // this.container.find('.clues').width(clueW);
+    // this.container.find('.clues').height(h);
     var labelh = $(".clues h4").height();
     $(".clues .across, .clues .down").height((h/2)-(labelh*2));
   }
@@ -323,7 +345,7 @@ function Crossw1rd(container_id) {
       var ol;
       if (this.direction=='A') ol = this.container.find(".clues .across");
       else ol = this.container.find(".clues .down");
-      var li = ol.find('p.c'+this.direction+wordNum);
+      var li = ol.find('li.c'+this.direction+wordNum);
       this.activateClue(li);
     }
   }
@@ -344,20 +366,23 @@ function Crossw1rd(container_id) {
       //   numbers (48-57)         letters (65-90)
       if ((i >= 48 && i <= 57) || (i>=65 && i<= 90)) {
         $(document).bind('keypress', String.fromCharCode(i), function(e) {
-          // insert the character
-          var c = String.fromCharCode(Crossw1rd.keyCode(e)).toUpperCase();
-          var active = self.grid.find('.active');
-          active.children('.letter').text(c);
-          self.saved = false;
-          // move to the next cell
-          var next;
-          if (self.direction=='A') {
-            next = self.cellRight(active,true);
+          if ($('.grid').hasClass('checking')) {
           } else {
-            next = self.cellBelow(active,true);
+            // insert the character
+            var c = String.fromCharCode(Crossw1rd.keyCode(e)).toUpperCase();
+            var active = self.grid.find('.active');
+            active.children('.letter').text(c);
+            self.saved = false;
+            // move to the next cell
+            var next;
+            if (self.direction=='A') {
+              next = self.cellRight(active,true);
+            } else {
+              next = self.cellBelow(active,true);
+            }
+            if (next.length>0) next.click();
+            return false;
           }
-          if (next.length>0) next.click();
-          return false;
         });
       }
     }
@@ -402,7 +427,8 @@ function Crossw1rd(container_id) {
       return false;
     });
     // backspace - clear current cell and move left within current word
-    $(document).bind('keydown', 'backspace', function() {
+    $(document).bind('keydown', 'backspace', function(e) {
+      e.preventDefault();
       var c = self.grid.find(".active");
       if (c.length==0) return;
       c.find('.letter').text('');
@@ -443,6 +469,7 @@ function Crossw1rd(container_id) {
       self.activateCell(prevWord);
       return false;
     });
+    /*
     // ctrl+shift+l - check letter
     $(document).bind('keydown', 'ctrl+shift+l', function() {
       self.checkCell();
@@ -455,12 +482,37 @@ function Crossw1rd(container_id) {
     $(document).bind('keydown', 'ctrl+shift+a', function() {
       self.checkPuzzle();
     });
+    */
   }
+
+  // clear lockdown and continue
+  this.unlockPuzzle = function() {
+    $('.grid').removeClass('checking');
+    $('button').removeClass('inactive');
+    $('#button-unlock').addClass('inactive');
+    for (var y=0; y<self.cells.length; y++) {
+      var row = self.cells[y];
+      for (var x=0; x<row.length; x++) {
+        cell = row[x];
+        cell.removeClass('correct');
+        cell.removeClass('incorrect');
+      }
+    }
+  }
+
+  // lock puzzle during checking
+  this.lockdownPuzzle = function() {
+    $('.grid').addClass('checking');
+    $('button').addClass('inactive');
+    $('#button-unlock').removeClass('inactive');
+  }
+
   
   /*** ANSWER CHECKING ***/
 
   // check the correctness of the active cell
   this.checkCell = function(cell) {
+    this.lockdownPuzzle();
     if (typeof cell == 'undefined') cell = this.grid.find('.active');
     var entered = cell.find('.letter').text();
     if (entered=='') return;
@@ -476,16 +528,16 @@ function Crossw1rd(container_id) {
   
   // check the correctness of the current word
   this.checkWord = function() {
-    var cell = this.grid.find('.active');
-    var wordNum = this.wordNumber(cell);
-    for (var i=0; i<this.clues.length; i++) {
-      var clue = this.clues[i];
-      if (clue.d==this.direction && clue.n==wordNum) {
+    var cell = self.grid.find('.active');
+    var wordNum = self.wordNumber(cell);
+    for (var i=0; i<self.clues.length; i++) {
+      var clue = self.clues[i];
+      if (clue.d==self.direction && clue.n==wordNum) {
         for (var c=0; c<clue.a.length; c++) {
           if (clue.d=='A') {
-            this.checkCell(this.cells[clue.y][clue.x+c]);
+            self.checkCell(self.cells[clue.y][clue.x+c]);
           } else {
-            this.checkCell(this.cells[clue.y+c][clue.x]);
+            self.checkCell(self.cells[clue.y+c][clue.x]);
           }
         }
         break;
@@ -495,10 +547,10 @@ function Crossw1rd(container_id) {
 
   // check the correctness of the whole puzzle
   this.checkPuzzle = function() {
-    for (var y=0; y<this.cells.length; y++) {
-      var row = this.cells[y];
+    for (var y=0; y<self.cells.length; y++) {
+      var row = self.cells[y];
       for (var x=0; x<row.length; x++) {
-        this.checkCell(row[x]);
+        self.checkCell(row[x]);
       }
     }
   }
@@ -595,6 +647,3 @@ Crossw1rd.keyCode = function(e) {
 }
 
 ///
-
-
-

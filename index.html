@@ -1,24 +1,29 @@
 <html>
 <head>
-<title>JavaScript Crossword</title>
-<link rel="stylesheet" type="text/css" href="style.css" />
-<script type="text/javascript" src="lib/jquery.min.js"></script>
-<script type="text/javascript" src="lib/jquery.hotkeys.js"></script>
-<script type="text/javascript" src="lib/jquery.cookie.js"></script>
-<script type="text/javascript" src="crossword.js"></script>
-<script type="text/javascript">
-  var crossw1rd1;
-  //var crossw1rd2;
-  $(document).ready(function() {
-    crossw1rd1 = new Crossw1rd('container1');
-    crossw1rd1.init('puzzle');
-  });
-</script>
-<meta charset="UTF-8">
+  <title>Crossword</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" type="text/css" href="style.css" />
+  <script type="text/javascript" src="lib/jquery.min.js"></script>
+  <script type="text/javascript" src="lib/jquery.hotkeys.js"></script>
+  <script type="text/javascript" src="lib/jquery.cookie.js"></script>
+  <script type="text/javascript" src="crossword.js"></script>
+  <script type="text/javascript">
+    var crossw1rd1;
+    //var crossw1rd2;
+    $(document).ready(function() {
+      crossw1rd1 = new Crossw1rd('puzzleContainer');
+      crossw1rd1.init('puzzle');
+    });
+  </script>
 </head>
 <body>
-<div id="container1"></div>
-<br/>
-<div id="container2"></div>
+  <div id="puzzleContainer"></div>
+  <br/>
+  <div id="keyboardHints" class="inactive">
+    <div>Space: switch between Across and Down</div>
+    <div>Tab: move to next word in Across/Down list</div>
+    <div>Arrow Keys: move across words</div>
+  </div>
 </body>
 </html>
