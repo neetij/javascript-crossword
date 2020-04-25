@@ -68,7 +68,7 @@ function Crossw1rd(container_id) {
 		this.clues = $.ajax({
 		  type: 'GET',
 		  dataType: 'json',
-		  url:  this.id+'.js',
+		  url:  'puzzles/'+this.id+'.js',
 		  success: function(data) {
 		  	self.puzzle = data;
 		  	self.clues = data.clues;
@@ -95,7 +95,10 @@ function Crossw1rd(container_id) {
 
   // draw the titles
   this.drawTitles = function() {
-    $('<div class="meta"><div class="title">'+self.title+'</div><div class="info">By: '+self.author+' | Updated: '+self.timestamp+'</div></div>').appendTo(this.container);
+    let formatted_date = new Date(self.timestamp);
+    const months = ["Jan", "Feb", "Mar","Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    formatted_date = formatted_date.getDate() + " " + months[(formatted_date.getMonth())] + " " + formatted_date.getFullYear();
+    $('<div class="meta"><div class="title">'+self.title+'</div><div class="info">By: '+self.author+' | '+formatted_date+'</div></div>').appendTo(this.container);
   }
   
   // draw the grid
