@@ -1,6 +1,12 @@
 *::after, *::before {-webkit-box-sizing: border-box; -moz-box-sizing: border-box; box-sizing: border-box; padding: 0; margin: 0;}
 html, body {margin: 0; padding: 0; outline: 0;}
-body {font:12px/1 Roboto Mono, Courier New, monospace; padding:1em;}
+body, table {font:12px/1 Roboto Mono, Courier New, monospace; padding:1em;}
+table {padding:0; width:100%;border:1px solid #eee;}
+tr:nth-child(odd) {background:#eee;}
+.activeModal {overflow: hidden;}
+.closeModalButton {position:absolute; right:0; top:0; background:#eee;padding:0.5em;}
+.modalbg {position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.5); z-index:9;}
+.modalWindow {z-index:99; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); max-width: 80%; min-width: 30%; max-height: 80%; min-height: 30%; background: #fff; padding: 1em;}
 .crossw1rd {}
 .grid { border-top: 1px solid #aaa; border-left: 1px solid #aaa;}
 .row { clear: left; white-space: nowrap;}
@@ -22,7 +28,7 @@ ol {padding-top:0;}
 ol li {padding:0.25em;}
 .meta {margin:0 0 1em 0;}
 .title {font-size:2em;}
-.inactive {display: none;}
+.hidden {display: none;}
 .grid.checking {filter:opacity(0.8);}
 .crossw1rd {display:grid; align-items:start; justify-content:center; grid-gap:2em;}
 .crossw1rd > div:nth-child(1) {order:1;}
@@ -35,5 +41,5 @@ ol li {padding:0.25em;}
   .crossw1rd > div:nth-child(2) {grid-area: 2 / 2 / 5 / 3;} 
   .crossw1rd > div:nth-child(3) {grid-area: 2 / 1 / 3 / 2;} 
   .crossw1rd > div:nth-child(4) {grid-area: 3 / 1 / 4 / 2;} 
-  .grid {position: sticky; top:2em;}
+  /* .grid {position: sticky; top:2em;} */
 }

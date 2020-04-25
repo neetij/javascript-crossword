@@ -190,17 +190,38 @@ function Crossw1rd(container_id) {
         ).scrollTop(top);
   }
 
+  this.toggleKeyboardShortcuts = function(target) {
+    console.log(target);
+    if ($('body').hasClass('activeModal')) {
+      $('body').removeClass('activeModal');
+      $('.modalbg').addClass('hidden');
+      $('#keyboardHintsModal').parents('.modalWindow').addClass('hidden');
+    } else {
+      $('body').addClass('activeModal');
+      $('.modalbg').removeClass('hidden');
+      $('#keyboardHintsModal').parents('.modalWindow').removeClass('hidden');
+    }
+  }
+
   // draw controls
   this.drawControls = function() {
-    var div = $('<div class="controls"></div>').appendTo(this.container);
-    var reset = $('<button class="active">Reset</button>').appendTo(div);
+    let controlsDiv = $('<div class="controls"></div>').appendTo(this.container);
+    let modalbg = $('<div class="modalbg hidden"></div>').appendTo(this.container);
+    modalbg.click(this.toggleKeyboardShortcuts);
+    let modalWrapper = $('<div class="modalWindow hidden"></div>').appendTo(this.container);
+    let modalCloseButton = $('<div class="closeModalButton"><a href="javascript:void(0);"><small>CLOSE</small></a></div>').appendTo(modalWrapper);
+    modalCloseButton.click(this.toggleKeyboardShortcuts);
+    let keyboardHints = $('<div id="keyboardHintsModal"><div><strong>Keyboard shortcuts</strong></div><br><table><tr><td width="30%">Space</td><td width="70%">switch between Across and Down</td></tr><tr><td width="30%">Tab</td><td width="70%">move to next word in Across/Down list</td></tr><tr><td width="30%">Arrow Keys</td><td width="70%">move across words</td></tr></table></div>').appendTo(modalWrapper);
+    let reset = $('<button class="active">Reset</button>').appendTo(controlsDiv);
     reset.click(this.reset);
-    var check3 = $('<button class="active">Check Puzzle</button>').appendTo(div);
+    let check3 = $('<button class="active">Check Puzzle</button>').appendTo(controlsDiv);
     check3.click(this.checkPuzzle);
-    var check2 = $('<button class="active">Check Word</button>').appendTo(div);
+    let check2 = $('<button class="active">Check Word</button>').appendTo(controlsDiv);
     check2.click(this.checkWord);
-    var unlock = $('<button id="button-unlock" class="inactive">Unlock and Continue</button>').appendTo(div);
+    let unlock = $('<button id="button-unlock" class="hidden">Unlock and Continue</button>').appendTo(controlsDiv);
     unlock.click(this.unlockPuzzle);
+    let keyboardShortcuts = $('<div class="active"><a href="javascript:void(0);">Keyboard shortcuts</a></div>').appendTo(controlsDiv);
+    keyboardShortcuts.click(this.toggleKeyboardShortcuts);
   }
 
   // set container dimensions based on grid size
@@ -491,8 +512,8 @@ function Crossw1rd(container_id) {
   // clear lockdown and continue
   this.unlockPuzzle = function() {
     $('.grid').removeClass('checking');
-    $('button').removeClass('inactive');
-    $('#button-unlock').addClass('inactive');
+    $('button').removeClass('hidden');
+    $('#button-unlock').addClass('hidden');
     for (var y=0; y<self.cells.length; y++) {
       var row = self.cells[y];
       for (var x=0; x<row.length; x++) {
@@ -506,8 +527,8 @@ function Crossw1rd(container_id) {
   // lock puzzle during checking
   this.lockdownPuzzle = function() {
     $('.grid').addClass('checking');
-    $('button').addClass('inactive');
-    $('#button-unlock').removeClass('inactive');
+    $('button').addClass('hidden');
+    $('#button-unlock').removeClass('hidden');
   }
 
   
